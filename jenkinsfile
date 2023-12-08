@@ -1,0 +1,42 @@
+pipeline {
+    agent {
+        node {
+            label 'int4_08_02_06'
+        }
+    }
+	parameters {
+  activeChoice choiceType: 'PT_SINGLE_SELECT', description: 'Choose Project Family', filterLength: 1, filterable: false, name: 'PROJECT_FAMILY', randomName: 'choice-parameter-1724030552265447', script: groovyScript(fallbackScript: [classpath: [], oldScript: '', sandbox: false, script: ''], script: [classpath: [], oldScript: '', sandbox: true, script: 'return ["XMIO", "HERMES"]'])
+  reactiveChoice choiceType: 'PT_SINGLE_SELECT', description: 'Choose Project', filterLength: 1, filterable: false, name: 'PROJECT_NAME', randomName: 'choice-parameter-1724030557864202', referencedParameters: 'PROJECT_FAMILY', script: groovyScript(fallbackScript: [classpath: [], oldScript: '', sandbox: false, script: ''], script: [classpath: [], oldScript: '', sandbox: true, script: '''if(PROJECT_FAMILY == "XMIO")
+   return ["DSXLE5", "XMIO4EFH", "DSXLE5SDI"]
+else if(PROJECT_FAMILY == "HERMES")
+   return ["Hermes_RX_HDMI_10G", "Hermes_TX_HDMI_10G"]'''])
+}
+
+    stages {
+        stage('Build') {
+            steps {
+                sh "echo Building project ${params.PROJECT_NAME}"
+                
+                // Sleep for 5 minutes
+                sh "sleep 1m"
+                
+                sh "echo The build is now done"
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Set the build display name based on the PROJECT_NAME parameter
+                currentBuild.displayName = "Build #${currentBuild.number} for ${params.PROJECT_NAME}"
+            }
+        }
+        success {
+            echo "Build succeeded! Congratulations!"
+        }
+        failure {
+            echo "Build failed. Please check the logs for details."
+        }
+    }
+}
